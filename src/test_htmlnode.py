@@ -3,7 +3,7 @@ from htmlnode import HTMLNODE
 from htmlnode import LeafNode
 from htmlnode import ParentNode
 from textnode import text_node_to_html_node
-from textnode import TextNode, TextType
+from textnode import TextNode, TextType, split_nodes_delimiter
 
 class TestHTMLNode(unittest.TestCase):
     def test_props_to_html_with_multiple_props(self):
@@ -90,3 +90,34 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, "b")
         self.assertEqual(html_node.value, "This is bold")
+
+class TestSplitNodesDelimiter(unittest.TestCase):
+    def test_no_delimiter(self):
+        # Test when the delimiter isn't in the text
+        node = TextNode("Just plain text", TextType.TEXT)
+        result = split_nodes_delimiter([node], "**", TextType.BOLD)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].text, "Just plain text")
+        self.assertEqual(result[0].text_type, TextType.TEXT)
+    
+    def test_simple_delimiter(self):
+        # Test with a single delimiter pair
+        node = TextNode("Text with **bold** content", TextType.TEXT)
+        result = split_nodes_delimiter([node], "**", TextType.BOLD)
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0].text, "Text with ")
+        self.assertEqual(result[0].text_type, TextType.TEXT)
+        self.assertEqual(result[1].text, "bold")
+        self.assertEqual(result[1].text_type, TextType.BOLD)
+        self.assertEqual(result[2].text, " content")
+        self.assertEqual(result[2].text_type, TextType.TEXT)
+    
+    def test_delimiter_at_start(self):
+        # Test with delimiter at the start
+        node = TextNode("**Bold** at the beginning", TextType.TEXT)
+        result = split_nodes_delimiter([node], "**", TextType.BOLD)
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result[0].text, "Bold")
+        self.assertEqual(result[0].text_type, TextType.BOLD)
+        self.assertEqual(result[1].text, " at the beginning")
+        self.assertEqual(result[1].text_type, TextType.TEXT)
