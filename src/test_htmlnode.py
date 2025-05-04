@@ -3,7 +3,7 @@ from htmlnode import HTMLNODE
 from htmlnode import LeafNode
 from htmlnode import ParentNode
 from textnode import text_node_to_html_node
-from textnode import TextNode, TextType, split_nodes_delimiter
+from textnode import TextNode, TextType, split_nodes_delimiter, extract_markdown_links, extract_markdown_images 
 
 class TestHTMLNode(unittest.TestCase):
     def test_props_to_html_with_multiple_props(self):
@@ -121,3 +121,62 @@ class TestSplitNodesDelimiter(unittest.TestCase):
         self.assertEqual(result[0].text_type, TextType.BOLD)
         self.assertEqual(result[1].text, " at the beginning")
         self.assertEqual(result[1].text_type, TextType.TEXT)
+
+    
+class TestMarkdownExtraction(unittest.TestCase):
+    
+    def test_extract_markdown_images_single(self):
+        text = "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        matches = extract_markdown_images(text)
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+    
+    def test_extract_markdown_images_multiple(self):
+        text = "Multiple images: ![first](https://example.com/first.jpg) and ![second](https://example.com/second.png)"
+        matches = extract_markdown_images(text)
+        expected = [
+            ("first", "https://example.com/first.jpg"),
+            ("second", "https://example.com/second.png")
+        ]
+        self.assertListEqual(expected, matches)
+    
+    def test_extract_markdown_images_none(self):
+        text = "This text has no images, only [a link](https://example.com)"
+        matches = extract_markdown_images(text)
+        self.assertListEqual([], matches)
+    
+    def test_extract_markdown_links_single(self):
+        text = "This is text with a [link](https://www.boot.dev)"
+        matches = extract_markdown_links(text)
+        self.assertListEqual([("link", "https://www.boot.dev")], matches)
+    
+    def test_extract_markdown_links_multiple(self):
+        text = "Multiple links: [first](https://example.com) and [second](https://another.com)"
+        matches = extract_markdown_links(text)
+        expected = [
+            ("first", "https://example.com"),
+            ("second", "https://another.com")
+        ]
+        self.assertListEqual(expected, matches)
+    
+    def test_extract_markdown_links_none(self):
+        text = "This text has no links, only an ![image](https://example.com/img.jpg)"
+        matches = extract_markdown_links(text)
+        self.assertListEqual([], matches)
+    
+    def test_extract_markdown_links_and_images(self):
+        text = "This has a [link](https://example.com) and an ![image](https://example.com/img.jpg)"
+        link_matches = extract_markdown_links(text)
+        image_matches = extract_markdown_images(text)
+        self.assertListEqual([("link", "https://example.com")], link_matches)
+        self.assertListEqual([("image", "https://example.com/img.jpg")], image_matches)
+    
+    def test_extract_markdown_links_with_special_chars(self):
+        text = "Link with [special chars in title!](https://example.com/path?query=value#fragment)"
+        matches = extract_markdown_links(text)
+        self.assertListEqual([("special chars in title!", "https://example.com/path?query=value#fragment")], matches)
+    
+    def test_extract_markdown_empty_string(self):
+        matches_links = extract_markdown_links("")
+        matches_images = extract_markdown_images("")
+        self.assertListEqual([], matches_links)
+        self.assertListEqual([], matches_images)
