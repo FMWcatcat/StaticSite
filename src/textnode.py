@@ -77,3 +77,43 @@ def extract_markdown_links(text):
     pattern = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
     matches = re.findall(pattern,text)
     return matches
+
+def split_nodes_image(old_nodes):
+    new_nodes = []
+    for old_node in old_nodes:
+        if old_node.text_type != TextType.TEXT:
+            new_nodes.append(old_node)
+            continue
+        text = old_node.text
+        images = extract_markdown_images(text)
+        while images:
+            alt, url = images[0]
+            before, after = text.split(f"![{alt}]({url})", 1)
+            if before:
+                new_nodes.append(TextNode(before, TextType.TEXT))
+            new_nodes.append(TextNode(alt, TextType.IMAGE, url))
+            text = after
+            images = extract_markdown_images(text)
+        if text:
+            new_nodes.append(TextNode(text, TextType.TEXT))           
+    return new_nodes
+
+def split_nodes_link(old_nodes):
+    new_nodes = []
+    for old_node in old_nodes:
+        if old_node.text_type != TextType.TEXT:
+            new_nodes.append(old_node)
+            continue
+        text = old_node.text
+        links = extract_markdown_links(text)
+        while links:
+            alt, url = links[0]
+            before, after = text.split(f"[{alt}]({url})", 1)
+            if before:
+                new_nodes.append(TextNode(before, TextType.TEXT))
+            new_nodes.append(TextNode(alt, TextType.LINK, url))
+            text = after
+            links = extract_markdown_links(text)
+        if text:
+            new_nodes.append(TextNode(text, TextType.TEXT))           
+    return new_nodes
