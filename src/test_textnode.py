@@ -2,7 +2,7 @@ import unittest
 import sys
 import os
 from textnode import TextNode, TextType
-from textnode import split_nodes_image, split_nodes_link, text_to_textnodes
+from textnode import markdown_to_blocks, split_nodes_image, split_nodes_link, text_to_textnodes
 
 class TestTextToTextNodes(unittest.TestCase):
     def test_text_to_textnodes_simple(self):
@@ -92,5 +92,57 @@ class TestTextToTextNodes(unittest.TestCase):
         self.assertEqual(nodes[9].text_type, TextType.LINK)
         self.assertEqual(nodes[9].url, "https://example.com")
 
+
+
+class TestMarkdownToBlocks(unittest.TestCase):
+    
+    def test_markdown_to_blocks(self):
+
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
+    
+    def test_empty_markdown(self):
+        md = ""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, [])
+    
+    def test_single_block(self):
+
+        md = "Just one block"
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, ["Just one block"])
+    
+    def test_extra_newlines(self):
+        # Test with excessive newlines
+        md = """
+Block 1
+
+
+Block 2
+
+
+
+Block 3
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, ["Block 1", "Block 2", "Block 3"])
+
 if __name__ == "__main__":
     unittest.main()
+
