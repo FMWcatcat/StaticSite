@@ -162,22 +162,25 @@ def block_to_block_type(block):
         return BlockType.code
     elif re.match("^#{1,6} ", block):
         return BlockType.heading
-    elif block.startswith(">"):
+    for line in lines:
+        if not line.startswith(">"):    
+            break
+    else: 
         return BlockType.quote
-    elif for line in lines:
-            if not line.startswith(f"- "):    
-                break
-        else:
-            return BlockType.unordered_list
+
+    for line in lines:
+        if not line.startswith(f"- "):    
+            break
     else:
-        expected_number = 1
-        for line in lines:
-            if line.startswith(f"{expected_number}. "):
-                expected_number += 1
-            else:
-                break
+        return BlockType.unordered_list
+    expected_number = 1
+    for line in lines:
+        if line.startswith(f"{expected_number}. "):
+            expected_number += 1
         else:
-            return BlockType.ordered_list
+            break
+    else:
+        return BlockType.ordered_list
     
     return BlockType.paragraph
 
