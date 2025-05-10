@@ -1,7 +1,7 @@
 import unittest
 import sys
 import os
-from textnode import TextNode, TextType
+from textnode import TextNode, TextType, BlockType
 from textnode import markdown_to_blocks, split_nodes_image, split_nodes_link, text_to_textnodes, block_to_block_type
 
 class TestTextToTextNodes(unittest.TestCase):
@@ -164,8 +164,7 @@ class TestBlockToBlockType(unittest.TestCase):
         self.assertEqual(block_to_block_type(olist_block), BlockType.ordered_list)
 
     def test_paragraph(self):
-        self.assertEqual(block_to_block_type("Just an ordinary paragraph without markdown symbols."),
-                         BlockType.paragraph)
+        self.assertEqual(block_to_block_type("Just an ordinary paragraph without markdown symbols."), BlockType.paragraph)
 
 if __name__ == "__main__":
     unittest.main()
