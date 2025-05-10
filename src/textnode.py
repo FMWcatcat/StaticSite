@@ -158,9 +158,9 @@ def markdown_to_blocks(markdown):
 def block_to_block_type(block):
     lines = block.splitlines()
 
-    if lines[0] == "```" and lines[-1] == "```":
+    if len(lines) >=2 and lines[0] == "```" and lines[-1] == "```":
         return BlockType.code
-    elif re.match("^#{1,6} ", block):
+    elif re.match("^#{1,6} ", lines[0]):
         return BlockType.heading
     for line in lines:
         if not line.startswith(">"):    
@@ -169,7 +169,7 @@ def block_to_block_type(block):
         return BlockType.quote
 
     for line in lines:
-        if not line.startswith(f"- "):    
+        if not line.startswith("- "):    
             break
     else:
         return BlockType.unordered_list
@@ -181,7 +181,8 @@ def block_to_block_type(block):
             break
     else:
         return BlockType.ordered_list
-    
+    if not lines:
+        return BlockType.paragraph
     return BlockType.paragraph
 
 

@@ -2,7 +2,7 @@ import unittest
 import sys
 import os
 from textnode import TextNode, TextType
-from textnode import markdown_to_blocks, split_nodes_image, split_nodes_link, text_to_textnodes
+from textnode import markdown_to_blocks, split_nodes_image, split_nodes_link, text_to_textnodes, block_to_block_type
 
 class TestTextToTextNodes(unittest.TestCase):
     def test_text_to_textnodes_simple(self):
@@ -142,6 +142,30 @@ Block 3
 """
         blocks = markdown_to_blocks(md)
         self.assertEqual(blocks, ["Block 1", "Block 2", "Block 3"])
+
+class TestBlockToBlockType(unittest.TestCase):
+    def test_heading(self):
+        self.assertEqual(block_to_block_type("# Example heading"), BlockType.heading)
+
+    def test_code(self):
+        code_block = "```\nprint('hi')\n```"
+        self.assertEqual(block_to_block_type(code_block), BlockType.code)
+
+    def test_quote(self):
+        quote_block = "> wisdom\n> grows in forests"
+        self.assertEqual(block_to_block_type(quote_block), BlockType.quote)
+
+    def test_unordered_list(self):
+        list_block = "- honey\n- berries\n- salmon"
+        self.assertEqual(block_to_block_type(list_block), BlockType.unordered_list)
+
+    def test_ordered_list(self):
+        olist_block = "1. sniff\n2. paw\n3. nap"
+        self.assertEqual(block_to_block_type(olist_block), BlockType.ordered_list)
+
+    def test_paragraph(self):
+        self.assertEqual(block_to_block_type("Just an ordinary paragraph without markdown symbols."),
+                         BlockType.paragraph)
 
 if __name__ == "__main__":
     unittest.main()
